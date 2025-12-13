@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Товар - VclouD</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-text">VclouD</span>
+            </a>
+            
+            <nav class="nav">
+                <a href="index.html" class="nav-link">← Назад до каталогу</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Product Page -->
+    <main class="main product-page">
+        <div class="container">
+            <!-- Breadcrumbs -->
+            <nav class="breadcrumbs" id="breadcrumbs">
+                <a href="index.html">Головна</a>
+                <span>›</span>
+                <a href="#" id="categoryLink">Категорія</a>
+                <span>›</span>
+                <span id="productName">Назва товару</span>
+            </nav>
+
+            <div class="product-content">
+                <!-- Gallery -->
+                <div class="product-gallery">
+                    <div class="main-image">
+                        <img id="mainImage" src="" alt="">
+                        <button class="gallery-nav prev" onclick="prevImage()">‹</button>
+                        <button class="gallery-nav next" onclick="nextImage()">›</button>
+                    </div>
+                    <div class="thumbnails" id="thumbnails">
+                        <!-- Мініатюри фото -->
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="product-info">
+                    <h1 id="title">Завантаження...</h1>
+                    
+                    <div class="product-price" id="price">
+                        <!-- Ціна -->
+                    </div>
+
+                    <div class="product-meta">
+                        <span class="meta-item" id="brand">
+                            <strong>Бренд:</strong> <span></span>
+                        </span>
+                        <span class="meta-item" id="category">
+                            <strong>Категорія:</strong> <span></span>
+                        </span>
+                    </div>
+
+                    <!-- Sizes (for clothing) -->
+                    <div class="product-sizes" id="sizesSection" style="display: none;">
+                        <h3>Розміри:</h3>
+                        <div class="sizes-list" id="sizesList">
+                            <!-- Розміри -->
+                        </div>
+                    </div>
+
+                    <div class="product-description">
+                        <h3>Опис</h3>
+                        <p id="description">Завантаження опису...</p>
+                    </div>
+
+                    <!-- Contact Buttons -->
+                    <div class="product-actions">
+                        <a href="#" id="telegramBtn" class="btn btn-primary">
+                            <span>📱</span> Написати в Telegram
+                        </a>
+                        <a href="#" id="olxBtn" class="btn btn-secondary" style="display: none;">
+                            <span>🛒</span> Переглянути на OLX
+                        </a>
+                    </div>
+
+                    <div class="product-share">
+                        <span>Поділитись:</span>
+                        <button onclick="copyLink()">🔗 Копіювати посилання</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Similar Products -->
+            <section class="similar-products">
+                <h2>Схожі товари</h2>
+                <div class="products-grid small" id="similarProducts">
+                    <!-- Схожі товари -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 VclouD</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/products.js"></script>
+    <script src="js/product-page.js"></script>
+</body>
+</html>

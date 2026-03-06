@@ -5,19 +5,30 @@ const cheerio = require("cheerio");
 const path = require("path");
 const { createClient } = require("@supabase/supabase-js");
 
+// Завантажуємо .env лише локально (на Railway є env variables)
+require("dotenv").config();
+
 // Дозволяємо self-signed SSL (для сумісності зі старим Node.js)
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── Конфіг ────────────────────────────────────────────────────
-const NETLIFY_TOKEN   = process.env.NETLIFY_TOKEN   || "nfp_GPCvnA6PeAjzymTNxBYTsxA2MdQaWqqXe76d";
-const NETLIFY_SITE_ID = process.env.NETLIFY_SITE_ID || "ab69a37c-34ed-4404-bb79-b34506bd093e";
+// ─── Конфіг (всі секрети — тільки через змінні середовища) ────
+const NETLIFY_TOKEN   = process.env.NETLIFY_TOKEN;
+const NETLIFY_SITE_ID = process.env.NETLIFY_SITE_ID;
 const ADMIN_PASSWORD  = process.env.ADMIN_PASSWORD  || "vcloud2026";
 
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://rnvdfmenlvqerdnleesy.supabase.co";
-const SUPABASE_KEY = process.env.SUPABASE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJudmRmbWVubHZxZXJkbmxlZXN5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjgxNzk0OCwiZXhwIjoyMDg4MzkzOTQ4fQ.6iMifYBIRXrr0UcpTYR24xO9LJI3qkyOJ5ewTW2OdCU";
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error("❌ SUPABASE_URL та SUPABASE_KEY обов'язкові (env variables)");
+  process.exit(1);
+}
+if (!NETLIFY_TOKEN || !NETLIFY_SITE_ID) {
+  console.warn("⚠️  NETLIFY_TOKEN або NETLIFY_SITE_ID не задані — деплой не працюватиме");
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 

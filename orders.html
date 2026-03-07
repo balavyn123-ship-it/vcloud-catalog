@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мої замовлення - VclouD</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .order-card { background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:20px;margin-bottom:16px; }
+        .order-header { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;flex-wrap:wrap; }
+        .status-badge { padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap; }
+        .order-section-title { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:14px 0 8px; }
+        .order-delivery-info { background:#ffffff08;border-radius:10px;padding:12px 14px;font-size:13px;display:flex;flex-direction:column;gap:5px; }
+        .order-items-list { display:flex;flex-direction:column;gap:8px; }
+        .order-item-row { display:flex;align-items:center;gap:10px; }
+        .order-item-img { width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid var(--border-color);flex-shrink:0; }
+        .order-footer { display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid var(--border-color);margin-top:14px;flex-wrap:wrap;gap:10px; }
+        .tg-support-btn { display:inline-flex;align-items:center;gap:7px;background:#2481cc22;color:#2481cc;border:1px solid #2481cc44;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;text-decoration:none; }
+        .tg-support-btn:hover { background:#2481cc33; }
+        .status-timeline { display:flex;border-radius:8px;overflow:hidden;margin:10px 0; }
+        .timeline-step { flex:1;text-align:center;padding:6px 2px;font-size:10px;font-weight:600;background:#ffffff08;color:var(--text-muted);border-right:1px solid var(--border-color); }
+        .timeline-step:last-child { border-right:none; }
+        .timeline-step.active { background:#22c55e22;color:#22c55e; }
+        .timeline-step.cancelled { background:#ef444422;color:#ef4444; }
+        .new-order-banner { background:linear-gradient(135deg,#22c55e22,#16a34a11);border:1px solid #22c55e44;border-radius:14px;padding:20px;text-align:center;margin-bottom:24px; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo"><span class="logo-text">VclouD</span></a>
+            <nav class="nav">
+                <a href="account.html" class="nav-link">← Кабінет</a>
+                <a href="cart.html" class="nav-link">🛒</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main" style="padding:32px 0 60px;">
+        <div class="container" style="max-width:760px;">
+            <h1 style="font-size:26px;font-weight:700;margin-bottom:24px;">📦 Мої замовлення</h1>
+
+            <div id="newOrderBanner" style="display:none;" class="new-order-banner">
+                <div style="font-size:36px;margin-bottom:8px;">✅</div>
+                <div style="font-weight:700;font-size:18px;margin-bottom:6px;">Замовлення прийнято!</div>
+                <div style="color:var(--text-muted);font-size:14px;">Ми вже обробляємо ваше замовлення. Статус оновлюватиметься нижче.</div>
+            </div>
+
+            <div id="ordersLoading" style="text-align:center;padding:40px;color:var(--text-muted);">Завантаження...</div>
+            <div id="ordersEmpty" style="display:none;text-align:center;padding:60px;color:var(--text-muted);">
+                <div style="font-size:48px;margin-bottom:12px;">📦</div>
+                <p>Замовлень ще немає</p>
+                <a href="index.html" class="btn btn-primary" style="display:inline-flex;width:auto;margin-top:16px;">До каталогу</a>
+            </div>
+            <div id="ordersList"></div>
+        </div>
+    </main>
+
+    <footer class="footer"><div class="container"><p>© 2025 VclouD</p></div></footer>
+
+    <script src="js/cart.js?v=7"></script>
+    <script src="js/auth.js?v=7"></script>
+    <script>
+        const API = 'https://vcloud-admin-server.onrender.com';
+        const TG_SUPPORT = 'https://t.me/Danyastores';
+
+        const STATUS_CONFIG = {
+            'pending':         { label: '⏳ Очікує оплати',    color: '#f59e0b', step: 0 },
+            'waiting_payment': { label: '⏳ Очікує оплати',    color: '#f59e0b', step: 0 },
+            'confirming':      { label: '🔄 Підтверджується',  color: '#3b82f6', step: 1 },
+            'partial':         { label: '⚠️ Часткова оплата',  color: '#f59e0b', step: 1 },
+            'paid':            { label: '✅ Оплачено',          color: '#22c55e', step: 2 },
+            'shipped':         { label: '🚚 Відправлено',       color: '#3b82f6', step: 3 },
+            'completed':       { label: '🎉 Виконано',          color: '#22c55e', step: 4 },
+            'failed':          { label: '❌ Помилка оплати',    color: '#ef4444', step: -1 },
+            'expired':         { label: '⏰ Час оплати вийшов', color: '#ef4444', step: -1 },
+            'cancelled':       { label: '❌ Скасовано',         color: '#ef4444', step: -1 },
+        };
+        const TIMELINE = ['Оплата', 'Підтверджено', 'Оплачено', 'Відправлено', 'Виконано'];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(location.search);
+            if (params.get('new') === '1') document.getElementById('newOrderBanner').style.display = '';
+
+            const user = (typeof getUser === 'function') ? getUser() : null;
+            if (!user) { window.location.href = 'account.html'; return; }
+            await loadOrders(user);
+        });
+
+        async function loadOrders(user) {
+            try {
+                const res = await fetch(`${API}/api/orders?email=${encodeURIComponent(user.email)}`, {
+                    headers: { 'Authorization': 'Basic dmNsb3VkMjAyNg==' }
+                });
+                const data = await res.json();
+                document.getElementById('ordersLoading').style.display = 'none';
+                const orders = data.orders || [];
+                if (!orders.length) { document.getElementById('ordersEmpty').style.display = ''; return; }
+                renderOrders(orders);
+            } catch(e) {
+                document.getElementById('ordersLoading').textContent = '❌ Помилка: ' + e.message;
+            }
+        }
+
+        function renderOrders(orders) {
+            document.getElementById('ordersList').innerHTML = orders.map(o => {
+                const cfg = STATUS_CONFIG[o.status] || { label: o.status, color: '#6b7280', step: 0 };
+                const isCancelled = cfg.step === -1;
+                const date = new Date(o.created_at).toLocaleDateString('uk-UA', {day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+                const items = o.items || [];
+
+                const timelineHtml = isCancelled
+                    ? `<div class="status-timeline"><div class="timeline-step cancelled" style="flex:1;">${cfg.label}</div></div>`
+                    : `<div class="status-timeline">${TIMELINE.map((t,i) =>
+                        `<div class="timeline-step ${i <= cfg.step ? 'active' : ''}">${t}</div>`
+                      ).join('')}</div>`;
+
+                const deliveryHtml = (o.city || o.nova_poshta) ? `
+                    <div class="order-section-title">📮 Доставка</div>
+                    <div class="order-delivery-info">
+                        ${o.name ? `<span>👤 <b>Отримувач:</b> ${o.name}</span>` : ''}
+                        ${o.phone ? `<span>📞 <b>Телефон:</b> ${o.phone}</span>` : ''}
+                        ${o.city ? `<span>🏙 <b>Місто:</b> ${o.city}</span>` : ''}
+                        ${o.nova_poshta ? `<span>📦 <b>Відділення НП:</b> ${o.nova_poshta}</span>` : ''}
+                    </div>` : '';
+
+                const itemsHtml = `
+                    <div class="order-section-title">🛒 Товари</div>
+                    <div class="order-items-list">
+                        ${items.map(item => `
+                            <div class="order-item-row">
+                                <img src="${item.image || 'https://placehold.co/40x40/1e1e1e/666?text=?'}" class="order-item-img" onerror="this.src='https://placehold.co/40x40/1e1e1e/666?text=?'">
+                                <div style="flex:1;font-size:13px;color:var(--text-secondary);">${item.title || item.name || '—'}</div>
+                                <div style="font-size:13px;font-weight:600;white-space:nowrap;">× ${item.qty || 1}</div>
+                                <div style="font-size:13px;font-weight:700;color:var(--price-color);white-space:nowrap;">${fmt(item.price * (item.qty || 1))}</div>
+                            </div>`).join('')}
+                    </div>`;
+
+                const tgMsg = encodeURIComponent(`Привіт! Питання по замовленню #${o.id}`);
+
+                return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div style="font-weight:700;font-size:15px;">Замовлення #${o.id}</div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${date}</div>
+                        </div>
+                        <span class="status-badge" style="background:${cfg.color}22;color:${cfg.color};">${cfg.label}</span>
+                    </div>
+
+                    ${timelineHtml}
+                    ${deliveryHtml}
+                    ${itemsHtml}
+
+                    <div class="order-footer">
+                        <div>
+                            <span style="color:var(--text-muted);font-size:13px;">Разом: </span>
+                            <span style="font-weight:700;font-size:18px;color:var(--price-color);">${fmt(o.total_uah)}</span>
+                        </div>
+                        <a href="${TG_SUPPORT}?text=${tgMsg}" target="_blank" class="tg-support-btn">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="#2481cc"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.932z"/></svg>
+                            Написати в Telegram
+                        </a>
+                    </div>
+
+                    ${isCancelled ? `
+                    <div style="margin-top:12px;background:#ef444411;border:1px solid #ef444433;border-radius:10px;padding:12px;font-size:13px;color:#ef4444;text-align:center;">
+                        Оплату не завершено. <a href="index.html" style="color:#ef4444;font-weight:700;">Повернутись до каталогу →</a>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function fmt(n) {
+            if (!n || isNaN(n)) return '—';
+            return new Intl.NumberFormat('uk-UA').format(Math.round(n)) + ' ₴';
+        }
+    </script>
+</body>
+</html>

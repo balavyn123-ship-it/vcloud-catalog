@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформлення замовлення - VclouD</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- QR code library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        /* ── Checkout specific styles ── */
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 700px) {
+            .checkout-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Pay options */
+        .pay-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .pay-tab {
+            flex: 1;
+            padding: 14px 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all .2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .pay-tab .tab-icon { font-size: 24px; }
+        .pay-tab:hover { border-color: var(--border-light); color: var(--text-primary); }
+        .pay-tab.active {
+            border-color: var(--primary);
+            background: rgba(59,130,246,0.08);
+            color: var(--text-primary);
+        }
+
+        /* Crypto section */
+        .crypto-coin-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .coin-btn {
+            padding: 10px 6px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all .2s;
+        }
+        .coin-btn .coin-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+        .coin-btn:hover { border-color: var(--border-light); color: var(--text-primary); }
+        .coin-btn.active {
+            border-color: #f7931a;
+            background: rgba(247,147,26,0.08);
+            color: var(--text-primary);
+        }
+        .coin-btn[data-coin="USDTTRC20"].active { border-color: #26a17b; background: rgba(38,161,123,0.08); }
+        .coin-btn[data-coin="ETH"].active        { border-color: #627eea; background: rgba(98,126,234,0.08); }
+        .coin-btn[data-coin="TON"].active         { border-color: #0088cc; background: rgba(0,136,204,0.08); }
+
+        .crypto-pay-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .crypto-amount-display {
+            text-align: center;
+            padding: 16px;
+            background: rgba(59,130,246,0.06);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        .crypto-amount-display .amount-num {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+        .crypto-amount-display .amount-uah {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .qr-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .qr-wrap canvas, .qr-wrap img {
+            border-radius: 12px;
+            border: 4px solid white;
+        }
+
+        .addr-box {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .addr-box .addr-text {
+            flex: 1;
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-primary);
+            word-break: break-all;
+            line-height: 1.5;
+        }
+        .addr-copy-btn {
+            padding: 8px 14px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: background .2s;
+        }
+        .addr-copy-btn:hover { background: var(--primary-hover); }
+        .addr-copy-btn.copied { background: #22c55e; }
+
+        .crypto-timer {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        .crypto-timer span { color: #f59e0b; font-weight: 700; }
+
+        .crypto-steps {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 12px 16px;
+            background: rgba(234,179,8,0.06);
+            border: 1px solid rgba(234,179,8,0.2);
+            border-radius: 10px;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        /* Card section */
+        .card-pay-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .mono-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .mono-card::before {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 120px; height: 120px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+        }
+        .mono-card-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            margin-bottom: 8px;
+        }
+        .mono-card-number {
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 2px;
+            font-family: monospace;
+            margin-bottom: 12px;
+        }
+        .mono-card-bank {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .mono-logo { font-size: 20px; }
+
+        .card-copy-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            margin-bottom: 12px;
+        }
+        .card-copy-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .card-steps {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 2;
+        }
+        .card-steps b { color: var(--text-primary); }
+
+        /* Confirm btn */
+        .confirm-paid-btn {
+            width: 100%;
+            padding: 14px;
+            background: #22c55e;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: background .2s;
+        }
+        .confirm-paid-btn:hover { background: #16a34a; }
+        .confirm-paid-btn:disabled { background: var(--border-color); color: var(--text-muted); cursor: not-allowed; }
+
+        /* Order summary */
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            position: sticky;
+            top: 80px;
+        }
+
+        /* Form */
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .form-card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+        .form-input {
+            width: 100%;
+            padding: 11px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color .2s;
+        }
+        .form-input:focus { outline: none; border-color: var(--primary); }
+
+        .order-error {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #f87171;
+            margin-bottom: 12px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo"><span class="logo-text">VclouD</span></a>
+            <nav class="nav"><a href="cart.html" class="nav-link">← Кошик</a></nav>
+        </div>
+    </header>
+
+    <main class="main" style="padding:32px 0 60px;">
+        <div class="container" style="max-width:880px;">
+            <h1 style="font-size:24px;font-weight:800;margin-bottom:24px;">Оформлення замовлення</h1>
+
+            <div class="checkout-grid">
+
+                <!-- LEFT COLUMN -->
+                <div>
+                    <!-- Дані -->
+                    <div class="form-card">
+                        <h3>👤 Ваші дані</h3>
+                        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Прізвище *</label>
+                                <input type="text" id="orderLastName" class="form-input" placeholder="Іваненко">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Ім'я *</label>
+                                <input type="text" id="orderName" class="form-input" placeholder="Іван">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top:12px;">
+                            <label>По батькові</label>
+                            <input type="text" id="orderMiddleName" class="form-input" placeholder="Іванович">
+                        </div>
+                        <div class="form-group">
+                            <label>Телефон *</label>
+                            <input type="tel" id="orderPhone" class="form-input" placeholder="+380XXXXXXXXX">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Email *</label>
+                            <input type="email" id="orderEmail" class="form-input" placeholder="your@email.com">
+                        </div>
+                    </div>
+
+                    <!-- Доставка -->
+                    <div class="form-card">
+                        <h3>📦 Доставка — Нова Пошта</h3>
+                        <div class="form-group">
+                            <label>Місто *</label>
+                            <input type="text" id="orderCity" class="form-input" placeholder="Київ">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Відділення Нової Пошти *</label>
+                            <input type="text" id="orderNovaPoshta" class="form-input" placeholder="Відділення №1 або Поштомат №12345">
+                        </div>
+                    </div>
+
+                    <!-- Спосіб оплати — tabs -->
+                    <div class="form-card">
+                        <h3>💰 Спосіб оплати</h3>
+
+                        <div class="pay-tabs">
+                            <button class="pay-tab active" id="tabCrypto" onclick="selectPayTab('crypto')">
+                                <span class="tab-icon">₿</span>
+                                <span>Крипто</span>
+                            </button>
+                            <button class="pay-tab" id="tabCard" onclick="selectPayTab('card')">
+                                <span class="tab-icon">💳</span>
+                                <span>Картка</span>
+                            </button>
+                        </div>
+
+                        <!-- КРИПТО СЕКЦІЯ -->
+                        <div id="sectionCrypto">
+                            <!-- Вибір монети -->
+                            <div class="crypto-coin-grid">
+                                <button class="coin-btn active" data-coin="USDTTRC20" onclick="selectCoin('USDTTRC20')">
+                                    <span class="coin-icon">₮</span>USDT
+                                </button>
+                                <button class="coin-btn" data-coin="BTC" onclick="selectCoin('BTC')">
+                                    <span class="coin-icon">₿</span>BTC
+                                </button>
+                                <button class="coin-btn" data-coin="ETH" onclick="selectCoin('ETH')">
+                                    <span class="coin-icon">Ξ</span>ETH
+                                </button>
+                                <button class="coin-btn" data-coin="TON" onclick="selectCoin('TON')">
+                                    <span class="coin-icon">💎</span>TON
+                                </button>
+                            </div>
+
+                            <div class="crypto-pay-box">
+                                <!-- Сума -->
+                                <div class="crypto-amount-display">
+                                    <div class="amount-num" id="cryptoAmountMain">—</div>
+                                    <div class="amount-uah" id="cryptoAmountUah">Оберіть монету</div>
+                                </div>
+
+                                <!-- QR -->
+                                <div class="qr-wrap">
+                                    <canvas id="cryptoQR" width="160" height="160"></canvas>
+                                </div>
+
+                                <!-- Адреса -->
+                                <div class="addr-box">
+                                    <span class="addr-text" id="cryptoAddrText">—</span>
+                                    <button class="addr-copy-btn" id="addrCopyBtn" onclick="copyAddr()">Копіювати</button>
+                                </div>
+
+                                <!-- Таймер -->
+                                <div class="crypto-timer">Замовлення дійсне: <span id="payTimer">30:00</span></div>
+
+                                <!-- Підказка -->
+                                <div class="crypto-steps">
+                                    1. Скопіюйте адресу або відскануйте QR<br>
+                                    2. Відправте <strong id="cryptoAmountHint">вказану суму</strong><br>
+                                    3. Натисніть «Я оплатив» — ми перевіримо і підтвердимо
+                                </div>
+
+                                <button class="confirm-paid-btn" id="confirmCryptoBtn" onclick="placeOrder()">
+                                    ✅ Я оплатив — оформити замовлення
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- КАРТКОВА СЕКЦІЯ -->
+                        <div id="sectionCard" style="display:none;">
+                            <div class="card-pay-box">
+                                <!-- Карта -->
+                                <div class="mono-card">
+                                    <div class="mono-card-label">Номер картки для оплати</div>
+                                    <div class="mono-card-number" id="monoCardNumber">5375 4141 1234 5678</div>
+                                    <div class="mono-card-bank">
+                                        <span class="mono-logo">🏦</span>
+                                        Monobank · Переказ на картку
+                                    </div>
+                                </div>
+
+                                <button class="card-copy-btn" onclick="copyCardNumber()">
+                                    📋 Скопіювати номер картки
+                                </button>
+
+                                <div class="card-steps">
+                                    <b>Як оплатити:</b><br>
+                                    1. Відкрийте Monobank або будь-який банк<br>
+                                    2. Переказ → введіть номер картки<br>
+                                    3. Сума: <b id="cardTotalHint">—</b><br>
+                                    4. В коментарі напишіть ваше ім'я<br>
+                                    5. Натисніть «Я оплатив» нижче
+                                </div>
+
+                                <button class="confirm-paid-btn" id="confirmCardBtn" onclick="placeOrder()">
+                                    ✅ Я оплатив — оформити замовлення
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Замовлення -->
+                <div>
+                    <div class="summary-card">
+                        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:14px;">Ваше замовлення</div>
+                        <div id="orderItems" style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border-color);"></div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                            <span style="color:var(--text-secondary);font-size:14px;">Разом:</span>
+                            <span id="orderTotal" style="font-size:24px;font-weight:800;color:var(--price-color);">0 ₴</span>
+                        </div>
+                        <div id="orderError" class="order-error"></div>
+                        <div style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:8px;">🔒 Ваші дані захищені</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer"><div class="container"><p>© 2025 VclouD</p></div></footer>
+
+    <script src="js/cart.js?v=6"></script>
+    <script src="js/auth.js?v=6"></script>
+    <script src="js/checkout.js?v=6"></script>
+</body>
+</html>

@@ -380,84 +380,28 @@
 
                         <!-- КРИПТО СЕКЦІЯ -->
                         <div id="sectionCrypto">
-                            <!-- Вибір монети -->
-                            <div class="crypto-coin-grid">
-                                <button class="coin-btn active" data-coin="USDTTRC20" onclick="selectCoin('USDTTRC20')">
-                                    <span class="coin-icon">₮</span>USDT
-                                </button>
-                                <button class="coin-btn" data-coin="BTC" onclick="selectCoin('BTC')">
-                                    <span class="coin-icon">₿</span>BTC
-                                </button>
-                                <button class="coin-btn" data-coin="ETH" onclick="selectCoin('ETH')">
-                                    <span class="coin-icon">Ξ</span>ETH
-                                </button>
-                                <button class="coin-btn" data-coin="TON" onclick="selectCoin('TON')">
-                                    <span class="coin-icon">💎</span>TON
-                                </button>
-                            </div>
-
                             <div class="crypto-pay-box">
-                                <!-- Сума -->
-                                <div class="crypto-amount-display">
-                                    <div class="amount-num" id="cryptoAmountMain">—</div>
-                                    <div class="amount-uah" id="cryptoAmountUah">Оберіть монету</div>
+                                <div style="text-align:center;padding:16px 0 8px;">
+                                    <div style="font-size:32px;margin-bottom:8px;">₿</div>
+                                    <div style="font-weight:700;font-size:16px;margin-bottom:4px;">Оплата криптовалютою</div>
+                                    <div style="color:var(--text-muted);font-size:13px;">Після натискання вас перенаправить на сторінку оплати NOWPayments — оберете монету там</div>
                                 </div>
-
-                                <!-- QR -->
-                                <div class="qr-wrap">
-                                    <canvas id="cryptoQR" width="160" height="160"></canvas>
-                                </div>
-
-                                <!-- Адреса -->
-                                <div class="addr-box">
-                                    <span class="addr-text" id="cryptoAddrText">—</span>
-                                    <button class="addr-copy-btn" id="addrCopyBtn" onclick="copyAddr()">Копіювати</button>
-                                </div>
-
-                                <!-- Таймер -->
-                                <div class="crypto-timer">Замовлення дійсне: <span id="payTimer">30:00</span></div>
-
-                                <!-- Підказка -->
-                                <div class="crypto-steps">
-                                    1. Скопіюйте адресу або відскануйте QR<br>
-                                    2. Відправте <strong id="cryptoAmountHint">вказану суму</strong><br>
-                                    3. Натисніть «Я оплатив» — ми перевіримо і підтвердимо
-                                </div>
-
-                                <button class="confirm-paid-btn" id="confirmCryptoBtn" onclick="placeOrder()">
-                                    ✅ Я оплатив — оформити замовлення
+                                <button class="confirm-paid-btn" id="payNowBtn" onclick="placeOrder()" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                                    💳 Перейти до оплати криптовалютою
                                 </button>
                             </div>
                         </div>
 
-                        <!-- КАРТКОВА СЕКЦІЯ -->
+                        <!-- КАРТКОВА СЕКЦІЯ — Portmone -->
                         <div id="sectionCard" style="display:none;">
                             <div class="card-pay-box">
-                                <!-- Карта -->
-                                <div class="mono-card">
-                                    <div class="mono-card-label">Номер картки для оплати</div>
-                                    <div class="mono-card-number" id="monoCardNumber">5375 4141 1234 5678</div>
-                                    <div class="mono-card-bank">
-                                        <span class="mono-logo">🏦</span>
-                                        Monobank · Переказ на картку
-                                    </div>
+                                <div style="text-align:center;padding:16px 0 8px;">
+                                    <div style="font-size:32px;margin-bottom:8px;">💳</div>
+                                    <div style="font-weight:700;font-size:16px;margin-bottom:4px;">Оплата карткою</div>
+                                    <div style="color:var(--text-muted);font-size:13px;">Visa / Mastercard через Portmone</div>
                                 </div>
-
-                                <button class="card-copy-btn" onclick="copyCardNumber()">
-                                    📋 Скопіювати номер картки
-                                </button>
-
-                                <div class="card-steps">
-                                    <b>Як оплатити:</b><br>
-                                    1. Відкрийте Monobank або будь-який банк<br>
-                                    2. Переказ → введіть номер картки<br>
-                                    3. Сума: <b id="cardTotalHint">—</b><br>
-                                    4. В коментарі напишіть ваше ім'я<br>
-                                    5. Натисніть «Я оплатив» нижче
-                                </div>
-
-                                <button class="confirm-paid-btn" id="confirmCardBtn" onclick="placeOrder()">
-                                    ✅ Я оплатив — оформити замовлення
+                                <button class="confirm-paid-btn" id="confirmCardBtn" onclick="placeOrder()" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">
+                                    💳 Перейти до оплати карткою
                                 </button>
                             </div>
                         </div>
@@ -484,8 +428,8 @@
 
     <footer class="footer"><div class="container"><p>© 2025 VclouD</p></div></footer>
 
-    <script src="js/cart.js?v=6"></script>
-    <script src="js/auth.js?v=6"></script>
-    <script src="js/checkout.js?v=6"></script>
+    <script src="js/cart.js?v=8"></script>
+    <script src="js/auth.js?v=8"></script>
+    <script src="js/checkout.js?v=8"></script>
 </body>
 </html>
